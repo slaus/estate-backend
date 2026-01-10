@@ -16,13 +16,3 @@ Route::get('/', function () {
     ]);
 });
 
-Route::any('login', function() {
-    return response()->json([
-        'error' => 'Method not allowed',
-        'message' => 'Use POST /api/v1/login for authentication',
-        'correct_endpoint' => [
-            'method' => 'POST',
-            'url' => '/api/v1/login'
-        ]
-    ], 405);
-})->name('login');

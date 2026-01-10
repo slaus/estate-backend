@@ -11,23 +11,24 @@ class Tag extends Model
 
     protected $fillable = [
         'name',
-        'type',
         'slug',
+        'type',
         'order_column'
     ];
 
     protected $casts = [
-        'name' => 'array',
+        'name' => 'array'
     ];
-
-    // Полиморфная связь с постами и другими моделями
+    
+    // Связь с постами
     public function posts()
     {
         return $this->morphedByMany(Post::class, 'taggable');
     }
-
-    public function scopePublished($query)
+    
+    // Связь со страницами (если нужно)
+    public function pages()
     {
-        return $query; // Теги всегда опубликованы
+        return $this->morphedByMany(Page::class, 'taggable');
     }
 }

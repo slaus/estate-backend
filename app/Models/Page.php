@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use Spatie\Tags\HasTags;
+use App\Traits\HasTags;
 
 class Page extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTags;
 
     protected $fillable = [
         'slug',
