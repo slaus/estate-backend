@@ -8,37 +8,58 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+	{
+		try {
+			$validator = Validator::make($request->all(), [
+				'email' => 'required|email',
+				'password' => 'required',
+			]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
-        }
+			if ($validator->fails()) {
+				return response()->json([
+					'success' => false,
+					'errors' => $validator->errors()
+				], 422);
+			}
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            $token = $user->createToken('api-token')->plainTextToken;
+			if (Auth::attempt($request->only('email', 'password'))) {
+				$user = Auth::user();
+				$token = $user->createToken('api-token')->plainTextToken;
 
-            return response()->json([
-                'user' => new UserResource($user),
-                'token' => $token,
-                'message' => 'Успішний вхід',
-            ]);
-        }
+				return response()->json([
+					'success' => true,
+					'user' => [
+						'id' => $user->id,
+						'name' => $user->name,
+						'email' => $user->email
+					],
+					'token' => $token,
+					'token_type' => 'Bearer',
+					'message' => 'Успішний вхід',
+				]);
+			}
 
-        return response()->json([
-            'message' => 'Невірний email або пароль'
-        ], 401);
-    }
+			return response()->json([
+				'success' => false,
+				'message' => 'Невірний email або пароль'
+			], 401);
+
+		} catch (\Exception $e) {
+			\Log::error('Login error: ' . $e->getMessage());
+			
+			return response()->json([
+				'success' => false,
+				'message' => 'Server error',
+				'error' => $e->getMessage()
+			], 500);
+		}
+	}
 
     public function register(Request $request)
     {
@@ -50,42 +71,70 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
+                'success' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        $user = \App\Models\User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        Auth::login($user);
-        $token = $user->createToken('api-token')->plainTextToken;
+            $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token,
-            'message' => 'Користувача успішно зареєстровано',
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'user' => new UserResource($user),
+                'token' => $token,
+                'message' => 'Користувача успішно зареєстровано',
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
+            if ($request->user()) {
+                $request->user()->currentAccessToken()->delete();
+            }
+            
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return response()->json([
-            'message' => 'Успішний вихід',
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Успішний вихід',
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Logout error'
+            ], 500);
+        }
     }
 
     public function user(Request $request)
     {
+        if (!$request->user()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
         return response()->json([
+            'success' => true,
             'user' => new UserResource($request->user()),
         ]);
     }
