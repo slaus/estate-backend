@@ -15,50 +15,37 @@ class AuthController extends Controller
 {
     public function login(Request $request)
 	{
-		try {
-			$validator = Validator::make($request->all(), [
-				'email' => 'required|email',
-				'password' => 'required',
-			]);
+		$validator = Validator::make($request->all(), [
+			'email' => 'required|email',
+			'password' => 'required',
+		]);
 
-			if ($validator->fails()) {
-				return response()->json([
-					'success' => false,
-					'errors' => $validator->errors()
-				], 422);
-			}
-
-			if (Auth::attempt($request->only('email', 'password'))) {
-				$user = Auth::user();
-				$token = $user->createToken('api-token')->plainTextToken;
-
-				return response()->json([
-					'success' => true,
-					'user' => [
-						'id' => $user->id,
-						'name' => $user->name,
-						'email' => $user->email
-					],
-					'token' => $token,
-					'token_type' => 'Bearer',
-					'message' => 'Успішний вхід',
-				]);
-			}
-
+		if ($validator->fails()) {
 			return response()->json([
-				'success' => false,
-				'message' => 'Невірний email або пароль'
-			], 401);
-
-		} catch (\Exception $e) {
-			\Log::error('Login error: ' . $e->getMessage());
-			
-			return response()->json([
-				'success' => false,
-				'message' => 'Server error',
-				'error' => $e->getMessage()
-			], 500);
+				'message' => 'Validation error',
+				'errors' => $validator->errors()
+			], 422);
 		}
+
+		if (Auth::attempt($request->only('email', 'password'))) {
+			$user = Auth::user();
+			$token = $user->createToken('api-token')->plainTextToken;
+
+			return response()->json([
+				'user' => [
+					'id' => $user->id,
+					'name' => $user->name,
+					'email' => $user->email
+				],
+				'token' => $token,
+				'token_type' => 'Bearer',
+				'message' => 'Успішний вхід',
+			]);
+		}
+
+		return response()->json([
+			'message' => 'Невірний email або пароль'
+		], 401);
 	}
 
     public function register(Request $request)
