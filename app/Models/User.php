@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,6 +15,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // Добавляем роль
     ];
 
     protected $hidden = [
@@ -29,5 +29,48 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Методы проверки ролей
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin' || $this->role === 'superadmin';
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === 'manager' || $this->role === 'admin' || $this->role === 'superadmin';
+    }
+
+    public function hasRole(string $role): bool
+    {
+        $roles = [
+            'superadmin' => ['superadmin'],
+            'admin' => ['admin', 'superadmin'],
+            'manager' => ['manager', 'admin', 'superadmin'],
+        ];
+
+        return in_array($this->role, $roles[$role] ?? []);
+    }
+
+    // Скоупы для фильтрации по ролям
+    public function scopeManagers($query)
+    {
+        return $query->where('role', 'manager');
+    }
+
+    public function scopeAdmins($query)
+    {
+        return $query->whereIn('role', ['admin', 'superadmin']);
+    }
+
+    public function scopeSuperAdmins($query)
+    {
+        return $query->where('role', 'superadmin');
     }
 }

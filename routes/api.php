@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\PublicController;
+use App\Http\Middleware\CheckTokenExpiration; // ← ДОБАВЬТЕ ЭТОТ ИМПОРТ
 
 Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     
@@ -38,21 +39,25 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     
     // ==================== ЗАЩИЩЕННЫЕ МАРШРУТЫ ====================
     
-    Route::middleware(['auth:sanctum', 'token.expiration'])->group(function () {
+    // ВАРИАНТ 1: Используйте полное имя класса
+    Route::middleware(['auth:sanctum', CheckTokenExpiration::class])->group(function () {
+        
+    // ВАРИАНТ 2: Или используйте алиас (должен работать после исправления Kernel)
+    // Route::middleware(['auth:sanctum', 'token.expiration'])->group(function () {
         
         // Аутентификация
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('user', [AuthController::class, 'user'])->name('user');
         
-        // Ресурсы CRUD (для админки)
-        Route::apiResource('admin/pages', PageController::class)->names([
-            'index' => 'admin.pages.index',
-            'store' => 'admin.pages.store',
-            'show' => 'admin.pages.show',
-            'update' => 'admin.pages.update',
-            'destroy' => 'admin.pages.destroy'
-        ]);
+        // Управление пользователями (только для админов)
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('admin/users', [AuthController::class, 'getUsers']);
+            Route::post('admin/users', [AuthController::class, 'register']);
+            Route::put('admin/users/{id}', [AuthController::class, 'updateUser']);
+            Route::delete('admin/users/{id}', [AuthController::class, 'deleteUser']);
+        });
         
+        // Посты (доступны всем авторизованным)
         Route::apiResource('admin/posts', PostController::class)->names([
             'index' => 'admin.posts.index',
             'store' => 'admin.posts.store',
@@ -61,21 +66,39 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
             'destroy' => 'admin.posts.destroy'
         ]);
         
-        Route::apiResource('admin/employees', EmployeeController::class);
-        Route::apiResource('admin/testimonials', TestimonialController::class);
-        Route::apiResource('admin/partners', PartnerController::class);
-        Route::apiResource('admin/menus', MenuController::class);
+        // Страницы (доступны всем авторизованным)
+        Route::apiResource('admin/pages', PageController::class)->names([
+            'index' => 'admin.pages.index',
+            'store' => 'admin.pages.store',
+            'show' => 'admin.pages.show',
+            'update' => 'admin.pages.update',
+            'destroy' => 'admin.pages.destroy'
+        ]);
         
-        // Специальные маршруты для админки
-        Route::put('admin/menus/rebuild', [MenuController::class, 'rebuild'])->name('admin.menus.rebuild');
+        // Специальные маршруты для страниц
         Route::get('admin/pages/list', [PageController::class, 'list'])->name('admin.pages.list');
         Route::post('admin/pages/{id}/generate-seo', [PageController::class, 'generateSeo'])->name('admin.pages.generate-seo');
         
-        // Теги (управление для админки)
+        // Теги (доступны всем авторизованным)
         Route::apiResource('admin/tags', TagController::class);
         
-        // Настройки для админки
-        Route::prefix('admin/settings')->name('admin.settings.')->group(function () {
+        // Сотрудники (доступны всем авторизованным)
+        Route::apiResource('admin/employees', EmployeeController::class);
+        
+        // Отзывы (доступны всем авторизованным)
+        Route::apiResource('admin/testimonials', TestimonialController::class);
+        
+        // Партнеры (доступны всем авторизованным)
+        Route::apiResource('admin/partners', PartnerController::class);
+        
+        // Меню (только для админов и суперадминов)
+        Route::middleware(['role:admin'])->group(function () {
+            Route::apiResource('admin/menus', MenuController::class);
+            Route::put('admin/menus/rebuild', [MenuController::class, 'rebuild'])->name('admin.menus.rebuild');
+        });
+        
+        // Настройки (только для админов и суперадминов)
+        Route::middleware(['role:admin'])->prefix('admin/settings')->name('admin.settings.')->group(function () {
             Route::get('{group}', [SettingController::class, 'index'])->name('index');
             Route::post('{group}', [SettingController::class, 'store'])->name('store');
         });

@@ -29,6 +29,7 @@ class Kernel extends HttpKernel
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CheckTokenExpiration::class, // ← ДОБАВЬТЕ ЗДЕСЬ
         ],
     ];
 
@@ -43,6 +44,7 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-		'token.expiration' => \App\Http\Middleware\CheckTokenExpiration::class,
+        'token.expiration' => \App\Http\Middleware\CheckTokenExpiration::class, // Это для именованного использования
+        'role' => \App\Http\Middleware\CheckRole::class,
     ];
 }

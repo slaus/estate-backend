@@ -10,15 +10,39 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Создаем администратора
-        DB::table('users')->insert([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('12345678'),
-            'email_verified_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Создаем суперадмина
+		DB::table('users')->insert([
+			'name' => 'Super Admin',
+			'email' => 'superadmin@example.com',
+			'password' => Hash::make('12345678'),
+			'role' => 'superadmin',
+			'email_verified_at' => now(),
+			'created_at' => now(),
+			'updated_at' => now(),
+		]);
+		
+		// Создаем тестового админа
+		DB::table('users')->insert([
+			'name' => 'Admin',
+			'email' => 'admin@example.com',
+			'password' => Hash::make('12345678'),
+			'role' => 'admin',
+			'email_verified_at' => now(),
+			'created_at' => now(),
+			'updated_at' => now(),
+		]);
+
+        // Создаем тестового менеджера
+		DB::table('users')->insert([
+			'name' => 'Manager',
+			'email' => 'manager@example.com',
+			'password' => Hash::make('12345678'),
+			'role' => 'manager',
+			'email_verified_at' => now(),
+			'created_at' => now(),
+			'updated_at' => now(),
+		]);
+        
 
         // Страницы
         DB::table('pages')->insert([
