@@ -38,7 +38,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     
     // ==================== ЗАЩИЩЕННЫЕ МАРШРУТЫ ====================
     
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'token.expiration'])->group(function () {
         
         // Аутентификация
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
