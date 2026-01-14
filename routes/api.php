@@ -17,11 +17,9 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     
     // ==================== ПУБЛИЧНЫЕ МАРШРУТЫ ====================
     
-    // Аутентификация
     Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('register', [AuthController::class, 'register'])->name('register');
     
-    // Публичный API
     Route::get('pages', [PublicController::class, 'pages']);
     Route::get('pages/{slug}', [PublicController::class, 'page'])->where('slug', '[a-z0-9-]+');
     Route::get('posts', [PublicController::class, 'posts']);
@@ -33,7 +31,6 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     Route::get('settings/{group}', [PublicController::class, 'settings']);
     Route::get('settings', [PublicController::class, 'allSettings']);
     
-    // Теги (публичный доступ)
     Route::get('tags', [PublicController::class, 'tags']);
     Route::get('posts/{slug}/tags', [PublicController::class, 'postTags']);
     
@@ -45,9 +42,14 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
     // ВАРИАНТ 2: Или используйте алиас (должен работать после исправления Kernel)
     // Route::middleware(['auth:sanctum', 'token.expiration'])->group(function () {
         
-        // Аутентификация
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('user', [AuthController::class, 'user'])->name('user');
+		
+		Route::prefix('user')->group(function () {
+			Route::post('profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+			Route::delete('avatar', [AuthController::class, 'removeAvatar'])->name('avatar.remove');
+			Route::get('profile/{id}', [AuthController::class, 'getUserById'])->name('profile.show');
+		});
         
         // Управление пользователями (только для админов)
         Route::middleware(['role:admin'])->group(function () {
