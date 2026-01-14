@@ -14,48 +14,48 @@ use Carbon\Carbon;
 class AuthController extends Controller
 {
     public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+	{
+		$validator = Validator::make($request->all(), [
+			'email' => 'required|email',
+			'password' => 'required',
+		]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
+		if ($validator->fails()) {
+			return response()->json([
+				'success' => false,
+				'message' => 'Validation error',
+				'errors' => $validator->errors()
+			], 422);
+		}
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            
-            $token = $user->createToken('api-token', ['*'], now()->addHours(1))->plainTextToken;
+		if (Auth::attempt($request->only('email', 'password'))) {
+			$user = Auth::user();
+			
+			$token = $user->createToken('api-token', ['*'], now()->addHours(1))->plainTextToken;
 
-            return response()->json([
-                'success' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-					'avatar' => $user->avatar,
-                    'role' => $user->role,
-                    'permissions' => $this->getUserPermissions($user->role)
-                ],
-                'token' => $token,
-                'token_type' => 'Bearer',
-                'expires_in' => 3600,
-                'expires_at' => now()->addHours(1)->toISOString(),
-                'message' => 'Успішний вхід',
-            ]);
-        }
+			return response()->json([
+				'success' => true,
+				'user' => [
+					'id' => $user->id,
+					'name' => $user->name,
+					'email' => $user->email,
+					'avatar' => $user->avatar, // ← ВАЖНО: должно быть здесь
+					'role' => $user->role,
+					'permissions' => $this->getUserPermissions($user->role)
+				],
+				'token' => $token,
+				'token_type' => 'Bearer',
+				'expires_in' => 3600,
+				'expires_at' => now()->addHours(1)->toISOString(),
+				'message' => 'Успішний вхід',
+			]);
+		}
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Невірний email або пароль'
-        ], 401);
-    }
+		return response()->json([
+			'success' => false,
+			'message' => 'Невірний email або пароль'
+		], 401);
+	}
 	
 	public function logout(Request $request)
     {
