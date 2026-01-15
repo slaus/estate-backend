@@ -67,6 +67,12 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
             'update' => 'admin.posts.update',
             'destroy' => 'admin.posts.destroy'
         ]);
+		
+		// Меню (только для админов и суперадминов)
+		Route::middleware([\App\Http\Middleware\CheckRole::class . ':admin,superadmin'])->group(function () {
+			Route::apiResource('admin/menus', MenuController::class);
+			Route::put('admin/menus/rebuild', [MenuController::class, 'rebuild'])->name('admin.menus.rebuild');
+		});
         
         // Страницы (доступны всем авторизованным)
         Route::apiResource('admin/pages', PageController::class)->names([
@@ -92,12 +98,6 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
         
         // Партнеры (доступны всем авторизованным)
         Route::apiResource('admin/partners', PartnerController::class);
-        
-        // Меню (только для админов и суперадминов)
-        Route::middleware(['role:admin'])->group(function () {
-            Route::apiResource('admin/menus', MenuController::class);
-            Route::put('admin/menus/rebuild', [MenuController::class, 'rebuild'])->name('admin.menus.rebuild');
-        });
         
         // Настройки (только для админов и суперадминов)
         Route::middleware(['role:admin'])->prefix('admin/settings')->name('admin.settings.')->group(function () {
