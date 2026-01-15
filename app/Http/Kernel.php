@@ -47,5 +47,6 @@ class Kernel extends HttpKernel
         'token.expiration' => \App\Http\Middleware\CheckTokenExpiration::class,
         'role' => \App\Http\Middleware\CheckRole::class,
 		'cors.static' => \App\Http\Middleware\CorsStaticFiles::class,
+		'admin' => \App\Http\Middleware\AdminAccess::class,
     ];
 }

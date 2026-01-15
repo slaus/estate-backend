@@ -15,8 +15,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatar',
         'role',
+        'avatar',
+        'phone',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -24,16 +26,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-			'avatar' => 'string',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
 
-    // Методы проверки ролей
     public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
@@ -41,38 +39,26 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->role === 'superadmin';
+        return $this->role === 'admin';
     }
 
     public function isManager(): bool
     {
-        return $this->role === 'manager' || $this->role === 'admin' || $this->role === 'superadmin';
+        return $this->role === 'manager';
     }
 
-    public function hasRole(string $role): bool
+    public function isRegularUser(): bool
     {
-        $roles = [
-            'superadmin' => ['superadmin'],
-            'admin' => ['admin', 'superadmin'],
-            'manager' => ['manager', 'admin', 'superadmin'],
-        ];
-
-        return in_array($this->role, $roles[$role] ?? []);
+        return $this->role === '' || $this->role === null;
     }
 
-    // Скоупы для фильтрации по ролям
-    public function scopeManagers($query)
+    public function hasRole($role): bool
     {
-        return $query->where('role', 'manager');
+        return $this->role === $role;
     }
 
-    public function scopeAdmins($query)
+    public function hasAnyRole(array $roles): bool
     {
-        return $query->whereIn('role', ['admin', 'superadmin']);
-    }
-
-    public function scopeSuperAdmins($query)
-    {
-        return $query->where('role', 'superadmin');
+        return in_array($this->role, $roles);
     }
 }

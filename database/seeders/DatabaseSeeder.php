@@ -11,38 +11,68 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // Создаем суперадмина
-		DB::table('users')->insert([
-			'name' => 'Super Admin',
-			'email' => 'superadmin@example.com',
-			'password' => Hash::make('12345678'),
-			'role' => 'superadmin',
-			'email_verified_at' => now(),
-			'created_at' => now(),
-			'updated_at' => now(),
-		]);
-		
-		// Создаем тестового админа
-		DB::table('users')->insert([
-			'name' => 'Admin',
-			'email' => 'admin@example.com',
-			'password' => Hash::make('12345678'),
-			'role' => 'admin',
-			'email_verified_at' => now(),
-			'created_at' => now(),
-			'updated_at' => now(),
-		]);
+        DB::table('users')->insert([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@example.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'superadmin',
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        
+        // Создаем тестового админа
+        DB::table('users')->insert([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'admin',
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         // Создаем тестового менеджера
-		DB::table('users')->insert([
-			'name' => 'Manager',
-			'email' => 'manager@example.com',
-			'password' => Hash::make('12345678'),
-			'role' => 'manager',
-			'email_verified_at' => now(),
-			'created_at' => now(),
-			'updated_at' => now(),
-		]);
-        
+        DB::table('users')->insert([
+            'name' => 'Manager',
+            'email' => 'manager@example.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'manager',
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Создаем тестовых обычных пользователей (пустая роль)
+        DB::table('users')->insert([
+            [
+                'name' => 'Иван Петров',
+                'email' => 'ivan@example.com',
+                'password' => Hash::make('12345678'),
+                'role' => '', // Пустая строка - обычный пользователь
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Мария Сидорова',
+                'email' => 'maria@example.com',
+                'password' => Hash::make('12345678'),
+                'role' => '', // Пустая строка - обычный пользователь
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Алексей Коваленко',
+                'email' => 'alex@example.com',
+                'password' => Hash::make('12345678'),
+                'role' => '', // Пустая строка - обычный пользователь
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
 
         // Страницы
         DB::table('pages')->insert([
@@ -110,6 +140,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->info('✅ Тестовые данные созданы!');
+        $this->command->info('👤 Суперадмин: superadmin@example.com / 12345678');
         $this->command->info('👤 Админ: admin@example.com / 12345678');
+        $this->command->info('👤 Менеджер: manager@example.com / 12345678');
+        $this->command->info('👤 Обычные пользователи: ivan@example.com, maria@example.com, alex@example.com / 12345678');
     }
 }
