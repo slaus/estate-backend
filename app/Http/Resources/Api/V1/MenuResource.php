@@ -8,18 +8,25 @@ class MenuResource extends JsonResource
 {
     public function toArray($request)
     {
-        return [
+        $data = [
             'id' => $this->id,
             'name' => $this->name,
             'layout' => $this->layout,
             'properties' => $this->properties,
-            '_lft' => $this->_lft,
-            '_rgt' => $this->_rgt,
-            'parent_id' => $this->parent_id,
             'visibility' => (bool)$this->visibility,
-            'children' => MenuResource::collection($this->whenLoaded('children')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+
+        // Для админки добавляем дополнительные поля
+        if ($request->user()) {
+            $data['_lft'] = $this->_lft;
+            $data['_rgt'] = $this->_rgt;
+            $data['parent_id'] = $this->parent_id;
+            $data['depth'] = $this->depth;
+            $data['children'] = MenuResource::collection($this->whenLoaded('children'));
+        }
+
+        return $data;
     }
 }

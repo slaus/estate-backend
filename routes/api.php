@@ -69,6 +69,8 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
         
         // Текущий пользователь
         Route::get('user', [AuthController::class, 'user'])->name('user');
+		
+		Route::middleware(['auth:sanctum', CheckTokenExpiration::class])->post('/upload', [UploadController::class, 'uploadImage']);
         
         // ============ УПРАВЛЕНИЕ АДМИНИСТРАТОРАМИ (только суперадмины) ============
         
@@ -160,6 +162,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.'], function () {
                 'destroy' => 'admin.menus.destroy'
             ]);
             Route::put('admin/menus/rebuild', [MenuController::class, 'rebuild'])->name('admin.menus.rebuild');
+			Route::get('admin/menus/pages', [MenuController::class, 'getPagesForMenu'])->name('admin.menus.pages');
         });
         
         // Настройки (для админов и суперадминов)
