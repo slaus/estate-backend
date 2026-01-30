@@ -114,7 +114,7 @@ class PageController extends Controller
     {
         $page = Page::findOrFail($id);
         
-        $seo = $this->generateSeo([
+        $seo = $this->generateSeoData([
             'name' => $page->name,
             'content' => $page->content,
         ]);
@@ -127,7 +127,7 @@ class PageController extends Controller
         ]);
     }
 
-    private function generateSeo($data)
+    private function generateSeoData($data)
     {
         $seo = [
             'meta_title' => [],
